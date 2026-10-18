@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>行旅録 一程一记</title>
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+
+
+<header class="bar">
+  <div class="brand"><b>行旅録</b><span>卷三 · 一程一记</span></div>
+  <nav class="tools">
+    <button class="tb" data-open="pages">叶目</button>
+    <button class="tb" data-open="style">风格</button>
+    <button class="tb" data-open="layout">版式</button>
+    <button class="tb" id="dice">骰一下</button>
+    <button class="tb" data-open="sticker">贴纸</button>
+    <button class="tb" data-open="parts">零件</button>
+    <button class="tb" id="shotBtn">长图</button>
+    <button class="tb zhu" data-open="save">存</button>
+    <button class="tb" data-open="settings">设置</button>
+  </nav>
+</header>
+
+<main>
+<article class="page" id="page">
+  <div class="banxin"><i>◆</i> 行旅録 · 卷三 · 一程一记 <i>◆</i></div>
+
+  <div class="grid">
+    <section class="part p-head" data-part="head">
+      <div class="head-meta" contenteditable data-key="meta" data-ph="北纬 · 东经 · 在哪个县"></div>
+      <div class="head-top">
+        <div>
+          <div class="place"><span class="place-cn" contenteditable data-key="place" data-ph="地名"></span><span class="lat-name" contenteditable data-key="placeLat" data-ph="pinyin"></span></div>
+          <span class="cheng" contenteditable data-key="cheng" data-ph="第几程 · 共几程"></span>
+        </div>
+        <div class="date"><b contenteditable data-key="date" data-ph="几月几日"></b><span contenteditable data-key="dateSub" data-ph="星期 · 干支 · 节气"></span></div>
+      </div>
+      <h1 contenteditable data-key="title" data-ph="给这一天起个名字"></h1>
+      <div class="weather" contenteditable data-key="weather" data-ph="天气 · 气温 · 风 · 日落"></div>
+    </section>
+
+    <section class="part p-body" data-part="body">
+      <div class="label">记</div>
+      <p class="body-text" contenteditable data-key="body" data-ph="这一天走了哪里、看见什么、想起什么……写几句就好，空着也不欠谁。"></p>
+    </section>
+
+    <section class="part p-photos" data-part="photos">
+      <div class="label">影 · 点照片看拍摄时辰</div>
+      <div class="photos" id="photos"></div>
+    </section>
+
+    <section class="part p-hours" data-part="hours">
+      <div class="label">十二时辰 · 这一天的快门</div>
+      <div class="hours" id="hours"></div>
+      <div class="hr-labels" id="hrLabels"></div>
+      <div class="hours-sum" id="hoursSum"></div>
+    </section>
+
+    <section class="part p-ticket" data-part="ticket">
+      <div class="label">路引 · 这一程</div>
+      <div class="ticket">
+        <div class="tk-main">
+          <div class="tk-route">
+            <div><small>FROM</small><span contenteditable data-key="tkFrom" data-ph="从哪"></span></div>
+            <div class="tk-arrow"></div>
+            <div><small>TO</small><span contenteditable data-key="tkTo" data-ph="到哪"></span></div>
+          </div>
+          <dl class="tk-rows">
+            <dt>乘</dt><dd contenteditable data-key="tkBy" data-ph="怎么去"></dd>
+            <dt>发</dt><dd contenteditable data-key="tkDep" data-ph="几点出发"></dd>
+            <dt>抵</dt><dd contenteditable data-key="tkArr" data-ph="几点到"></dd>
+            <dt>记</dt><dd contenteditable data-key="tkNote" data-ph="路上的一句"></dd>
+          </dl>
+        </div>
+        <div class="tk-stub">
+          <div class="tk-no" contenteditable data-key="tkNo" data-ph="No."></div>
+          <div class="yanqi">验<br>讫</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="part p-food" data-part="food">
+      <div class="label">饮馔 · 吃了什么</div>
+      <div class="food">
+        <div class="food-head"><b contenteditable data-key="foodTitle" data-ph="哪一顿"></b><span contenteditable data-key="foodWhere" data-ph="在哪 · 几点"></span></div>
+        <ul id="foodList"></ul>
+        <button class="food-add" id="foodAdd">＋ 加一道</button>
+        <p class="food-say" contenteditable data-key="foodSay" data-ph="「吃完说一句」"></p>
+        <div class="food-end" contenteditable data-key="foodEnd" data-ph="吃饱了"></div>
+      </div>
+    </section>
+
+    <section class="part p-quote" data-part="quote">
+      <div class="label">一句</div>
+      <p class="quote" contenteditable data-key="quote" data-ph="「这一天听到的一句话」"></p>
+      <div class="quote-by" contenteditable data-key="quoteBy" data-ph="谁说的 · 什么时辰"></div>
+    </section>
+
+    <aside class="part p-note" data-part="note">
+      <div class="note">
+        <div class="label">眉批</div>
+        <div contenteditable data-key="note" data-ph="回来以后补的一笔"></div>
+      </div>
+    </aside>
+
+    <footer class="part p-seal" data-part="seal">
+      <span class="seal-sign" id="sealSign"></span>
+      <div id="sealMotto"></div>
+      <div id="sealName"></div>
+    </footer>
+  </div>
+
+  <div class="stk-layer" id="stkLayer"></div>
+  <div class="stk-tools" id="stkTools">
+    <button data-act="rot">转</button><button data-act="big">大</button><button data-act="small">小</button><button data-act="up">置顶</button><button data-act="tear" class="tear">撕</button>
+  </div>
+  <div class="yeshu" id="yeshu"></div>
+</article>
+</main>
+
+<div class="pager" id="pager">
+  <button id="pgPrev" aria-label="上一叶">‹</button>
+  <button class="pg-no" id="pgNo" data-open="pages"></button>
+  <button id="pgNext" aria-label="下一叶">›</button>
+  <button class="pg-new" id="pgNew" title="在这一叶后面新增一张空白页">＋ 空白页</button>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet"></aside>
+<div class="toast" id="toast"></div>
+
+<div class="shot" id="shot" role="dialog" aria-label="存长图">
+  <div class="shot-bar">
+    <div class="seg"><button data-scope="leaf" class="on">这一叶</button><button data-scope="book">整本连成长卷</button></div>
+    <button class="shot-x" id="shotX" aria-label="关">×</button>
+  </div>
+  <div class="shot-view" id="shotView"></div>
+  <p class="shot-tip" id="shotTip"></p>
+  <div class="shot-acts"><button class="main" id="shotSave">存到相册</button></div>
+</div>
+
+<script src="./assets/vendor/html-to-image.js"></script>
+<script src="./assets/main.js"></script>
+</body>
+</html>
