@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>素笺集</title>
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+
+
+<header class="bar">
+  <div class="bar-title"><b>素笺集</b><span>P/J JOURNAL · 国风空白笔记</span></div>
+  <nav class="tools">
+    <button class="tb" data-open="pages">笺目</button>
+    <button class="tb" data-open="style">笺式</button>
+    <button class="tb" data-open="weather">天时</button>
+    <button class="tb" data-open="box">百宝匣</button>
+    <button class="tb" id="dice">骰一下</button>
+    <button class="tb zhu" id="shotBtn">长图</button>
+    <button class="tb" data-open="settings">设置</button>
+  </nav>
+</header>
+
+<main>
+<article class="page" id="page">
+  <div class="flower" id="flower"></div>
+  <div class="frame"></div>
+  <div class="banxin">素 笺 集</div>
+  <div class="hd">
+    <div class="title" contenteditable data-key="title" data-ph="题"></div>
+    <div class="rt">
+      <div class="date" contenteditable data-key="date" data-ph="日期"></div>
+      <button class="tianshi" id="tianshi" data-open="weather"></button>
+    </div>
+  </div>
+  <div class="area"><div class="txt" id="txt" contenteditable data-key="text" data-ph="点这里写字；想手写，就切到下面的「笔」。"></div></div>
+  <div class="sign"><span class="who" id="who"></span><span id="sealMotto"></span><span id="sealName"></span></div>
+  <div class="stk-layer" id="stkLayer"></div>
+  <canvas id="ink"></canvas><canvas id="inkLive"></canvas>
+  <div class="stk-tools" id="stkTools"><button data-act="rot">转</button><button data-act="big">大</button><button data-act="small">小</button><button data-act="col">色</button><button data-act="tear" class="tear">撕</button></div>
+  <div class="yeshu" id="yeshu"></div>
+</article>
+</main>
+
+<div class="dock" id="dock">
+  <div class="pill penbar" id="colorbar">
+    <button class="dot on" data-color="ink" title="墨"><i style="background:var(--ink)"></i></button>
+    <button class="dot" data-color="zhu" title="朱砂"><i style="background:var(--zhu)"></i></button>
+    <button class="dot" data-color="yanzhi" title="胭脂"><i style="background:var(--pen-yanzhi)"></i></button>
+    <button class="dot" data-color="dian" title="花青"><i style="background:var(--pen-dian)"></i></button>
+    <button class="dot" data-color="dai" title="黛绿"><i style="background:var(--pen-dai)"></i></button>
+    <button class="dot" data-color="huang" title="藤黄"><i style="background:var(--pen-huang)"></i></button>
+  </div>
+  <div class="pill penbar" id="penbar">
+    <button class="br on" data-brush="pen" title="硬笔：细而匀">笔</button>
+    <button class="br" data-brush="brush" title="毛笔：慢粗快细，起收有锋">毫</button>
+    <button class="br" data-brush="wash" title="晕染：淡淡一层水色">染</button>
+    <button class="br" data-brush="plum" title="画梅：沿着笔迹开梅花">梅</button>
+    <span class="sep"></span>
+    <button class="sz" data-size="0" title="细"><i style="width:4px;height:4px"></i></button>
+    <button class="sz on" data-size="1" title="中"><i style="width:7px;height:7px"></i></button>
+    <button class="sz" data-size="2" title="粗"><i style="width:11px;height:11px"></i></button>
+    <span class="sep"></span>
+    <button id="eraser" title="擦掉一笔">擦</button>
+    <button id="undo" title="撤销">撤</button>
+    <button id="clearInk" title="清空这一笺的涂鸦">清</button>
+  </div>
+  <div class="pill">
+    <div class="mode"><button class="on" data-mode="text">字</button><button data-mode="pen">笔</button></div>
+    <button id="pgPrev" aria-label="上一笺">‹</button>
+    <button class="no" id="pgNo" data-open="pages"></button>
+    <button id="pgNext" aria-label="下一笺">›</button>
+    <button class="new" id="pgNew">＋ 新笺</button>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet"></aside>
+<div class="toast" id="toast"></div>
+
+<div class="shot" id="shot" role="dialog" aria-label="存长图">
+  <div class="shot-bar">
+    <div class="seg"><button data-scope="leaf" class="on">这一笺</button><button data-scope="book">整本连成长卷</button></div>
+    <button class="shot-x" id="shotX" aria-label="关">×</button>
+  </div>
+  <div class="shot-view" id="shotView"></div>
+  <p class="shot-tip" id="shotTip"></p>
+  <div class="shot-acts"><button class="main" id="shotSave">存到相册</button></div>
+</div>
+
+<script src="./assets/vendor/html-to-image.js"></script>
+<script src="./assets/main.js"></script>
+</body>
+</html>
