@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>观梅録</title>
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+<header class="top noprint">
+  <div class="topin">
+    <button class="back" id="back" aria-label="返回">‹</button>
+    <div class="crumb" id="crumb">观梅録</div>
+    <div class="toplinks"><a href="#/home">目录</a><a href="#/table">查卦表</a><a href="#/lu">心动録</a></div>
+  </div>
+  <div class="tapes" id="tapes"></div>
+</header>
+<main id="main"></main>
+<div class="tabs noprint"><nav id="tabs">
+  <a href="#/home" data-t="home"><i>梅</i>观梅</a>
+  <a href="#/table" data-t="table"><i>卦</i>查卦</a>
+  <a href="#/qi" data-t="qi" class="qi"><i>起</i>起卦</a>
+  <a href="#/lu" data-t="lu"><i>録</i>心动録</a>
+  <a href="#/look" data-t="look"><i>看</i>回看</a>
+</nav></div>
+<div class="toast" id="toast"></div>
+<div class="shot" id="shot"><div class="bar"><span>存成图</span><button id="shotX" aria-label="关">×</button></div><div class="v" id="shotV"></div><p class="tip" id="shotTip"></p><div class="acts"><button class="btn main" id="shotSave">存到相册</button></div></div>
+
+<script src="./assets/vendor/html-to-image.js"></script>
+<script src="./assets/main.js"></script>
+</body>
+</html>
