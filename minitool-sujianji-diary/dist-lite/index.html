@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>素笺集 · 照片日记</title>
+  <meta name="theme-color" content="#f6efe0">
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+<div class="wrap">
+
+<!-- 圈 -->
+<section id="vFeed">
+  <header class="top" id="top">
+    <button class="ib txtb" id="toAlbum">相册</button>
+    <span class="ttl">素笺集</span>
+    <button class="ib" id="toNew" aria-label="写一条"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 8.5A2 2 0 0 1 5 6.5h2.4l1.5-2h6.2l1.5 2H19a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.8"/></svg></button>
+  </header>
+  <div class="cover" id="cover"></div>
+  <div class="motto" id="motto"></div>
+  <nav class="chips" id="chips"></nav>
+  <div id="nanian"></div>
+  <div id="feed"></div>
+</section>
+
+<!-- 相册 -->
+<section id="vAlbum" hidden>
+  <div class="vbar"><button class="back" data-back><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>素笺集</button><h2>相册</h2></div>
+  <div id="album"></div>
+</section>
+
+<!-- 详情 -->
+<section id="vDetail" class="detail" hidden>
+  <div class="vbar"><button class="back" data-back><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>返回</button><h2>详情</h2></div>
+  <div id="detail"></div>
+</section>
+</div>
+
+<!-- 写一条 -->
+<div class="compose" id="compose" hidden>
+  <div class="in">
+    <div class="chd"><button class="x" id="cCancel">取消</button><h3 id="cTitle">写一条</h3><button class="btn" id="cPost" disabled>落笔</button></div>
+    <textarea class="ctx" id="cText" placeholder="这一刻，想说点什么……" rows="5"></textarea>
+    <div class="cph">
+      <button class="slot" id="cSlot"></button>
+      <div class="ops" id="cOps" hidden><button id="cSwap">换一张</button><button id="cDrop">不要图了</button></div>
+    </div>
+    <button class="exifc" id="cExif" hidden></button>
+    <div class="rows">
+      <div class="rw"><b>所在</b><div class="v"><input type="text" id="cWhere" placeholder="于何处（可不填）" maxlength="30"></div></div>
+      <div class="rw"><b>天时</b><div class="v" id="cWx"></div></div>
+      <div class="rw"><b>时候</b><div class="v"><input type="datetime-local" id="cTime"></div></div>
+      <div class="rw"><b>分组</b><div class="v" id="cTag"></div></div>
+      <div class="rw"><b>谁可以看</b><div class="v"><span class="lock" id="cLock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="10.5" width="14" height="9.5" rx="1.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>仅自己</span></div></div>
+    </div>
+    <p class="cnote">这里没有别人，写什么都行。<br>一条配一张照片，不配也行。</p>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet"></aside>
+<div class="toast" id="toast"></div>
+
+<div class="shot" id="shot" role="dialog" aria-label="存卡片">
+  <div class="shot-bar">存成一张卡片<button class="shot-x" id="shotX" aria-label="关">×</button></div>
+  <div class="shot-view" id="shotView"></div>
+  <p class="shot-tip" id="shotTip"></p>
+  <div class="shot-acts"><button class="main" id="shotSave" disabled>存到相册</button></div>
+</div>
+
+<script src="./assets/main.js"></script>
+</body>
+</html>
