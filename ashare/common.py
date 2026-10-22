@@ -181,6 +181,25 @@ def stock_name(code):
         return ""
 
 
+def quote(code, retries=3):
+    """腾讯行情快照：名称/现价/涨跌幅/换手/PE/PB/市值/涨跌停价。"""
+    last = None
+    for i in range(retries):
+        try:
+            r = _S.get(f"https://qt.gtimg.cn/q={prefix(code)}{code}", timeout=15)
+            r.raise_for_status()
+            r.encoding = "gbk"
+            f = r.text.split('"')[1].split("~")
+            num = lambda x: float(x) if re.fullmatch(r"-?[\d.]+", x or "") else 0.0
+            return {"name": f[1], "price": num(f[3]), "chg": num(f[32]), "turnover": num(f[38]),
+                    "pe": f[39], "pb": f[46], "total_cap": f[45], "float_cap": num(f[44]),
+                    "up": f[47], "down": f[48]}
+        except Exception as e:
+            last = e
+            time.sleep(2 * (i + 1))
+    raise RuntimeError(f"行情快照获取失败 {code}: {last}")
+
+
 def build_universe(boards, codes, fields="f12,f14", fid="f174"):
     """-> [{code,name,board,...}]。codes 优先；否则按板块拉取，同一股票去重。"""
     uni = {}

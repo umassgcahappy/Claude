@@ -10,9 +10,10 @@
 | 3 打分 | `python3 -m ashare.stock_score [--codes ...]` | stock-score.ps1 |
 | 回测 | `python3 -m ashare.backtest [--codes ...] [--factors 7 8]` | backtest.ps1 |
 | 回测 | `python3 -m ashare.rotation_backtest` | rotation-backtest.ps1 |
+| 单股 | `python3 -m ashare.stock_analyze 600398 [--dps 0.41] [--out report.md]` | stock-analysis / money-flow / ann-risk-scan |
 | 缓存 | `python3 -m ashare.cache_eniu [--codes ...]` | cache-eniu.ps1 |
 
-单只股票的完整分析见仓库根目录的 `stock_analyze.py`。
+`stock_analyze` 是单只股票的一站式分析（技术面、估值、资金流、公告风险、负面清单、企稳信号），与批量脚本共用 `common.py`。
 
 - 东财板块列表接口（`push2delay` 的 `clist`）限流时，批量脚本会提示失败；可用 `--codes 600036 601398` 手填股票池。
   此时 `stock_score` 拿不到东财的股息率 / 换手，股息因子记 0 分，"量能收敛"按未满足处理，并在备注标出。

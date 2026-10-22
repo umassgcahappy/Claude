@@ -1,16 +1,15 @@
-#!/usr/bin/env python3
-"""A股单只股票一站式分析脚本（Python 版）。
+"""A股单只股票一站式分析（技术面 / 估值 / 资金流 / 公告风险 / 负面清单 / 企稳信号）。
 
-整合原 PowerShell 脚本 stock-analysis / money-flow / ann-risk-scan / neg-list-scan
-的逻辑，并补充亿牛网 PB 历史分位。只依赖 requests。
+整合原 PowerShell 脚本 stock-analysis / money-flow / ann-risk-scan / neg-list-scan 的逻辑，
+并补充亿牛网 PB 历史分位。
 
-用法：
-    python3 stock_analyze.py 600398
-    python3 stock_analyze.py 600398 --out report.md      # 同时保存到文件
-    python3 stock_analyze.py 600398 --dps 0.41            # 手填最近一年每股分红，算股息率
-    python3 stock_analyze.py 600398 --skip-eniu           # 跳过较慢的亿牛 PB 接口
+用法（在仓库根目录）：
+    python3 -m ashare.stock_analyze 600398
+    python3 -m ashare.stock_analyze 600398 --out report.md      # 同时保存到文件
+    python3 -m ashare.stock_analyze 600398 --dps 0.41            # 手填最近一年每股分红，算股息率
+    python3 -m ashare.stock_analyze 600398 --skip-eniu           # 跳过较慢的亿牛 PB 接口
 
-数据源：腾讯行情（快照 / 日K）、东方财富（资金流 / 公告 / 大宗交易）、亿牛网（PB 历史）。
+数据源：腾讯行情（快照 / 日K）、东方财富（资金流 / 公告 / 大宗交易）、亿牛网（PB 历史，优先读 cache_eniu 缓存）。
 指标口径与通达信 / 东财一致：MACD=EMA(12,26,9) 柱=2*(DIF-DEA)；RSI 为 Wilder 平滑；
 BIAS6/12/24 分别以 MA5/MA10/MA20 为基准（沿用原脚本口径）。
 仅供数据计算与信息参考，不构成投资建议。
@@ -20,40 +19,14 @@ import bisect
 import io
 import re
 import sys
-import time
 from contextlib import redirect_stdout
 from datetime import datetime, timedelta
 
-import requests
-
-UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
-SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": UA})
+from .common import EM_REF, ema_series, eniu_series, http_json, kline_recent, prefix, quote, rsi_series
+from .neg_list_scan import classify
 
 
 # ---------------------------------------------------------------- 工具
-
-def market_prefix(code):
-    if code.startswith("6"):
-        return "sh"
-    if code.startswith(("0", "3")):
-        return "sz"
-    raise ValueError(f"无法识别股票代码 {code}（支持 60/68/00/30 开头）")
-
-
-def get(url, referer=None, timeout=20, retries=3, raw=False):
-    """带重试的 GET，返回 JSON（raw=True 时返回 Response）。"""
-    last = None
-    for i in range(retries):
-        try:
-            r = SESSION.get(url, headers={"Referer": referer} if referer else None, timeout=timeout)
-            r.raise_for_status()
-            return r if raw else r.json()
-        except Exception as e:  # 网络 / 限流 / 非 JSON，统一重试
-            last = e
-            time.sleep(min(2 * (i + 1), 6))
-    raise RuntimeError(f"请求失败：{url[:90]}... {last}")
-
 
 def limit_pct(code, name):
     if "ST" in name:
@@ -67,70 +40,24 @@ def ma(vals, i, p):
     return sum(vals[i - p + 1:i + 1]) / p if i >= p - 1 else float("nan")
 
 
-def ema_series(vals, period):
-    k = 2 / (period + 1)
-    out = [vals[0]]
-    for v in vals[1:]:
-        out.append((v - out[-1]) * k + out[-1])
-    return out
-
-
-def rsi_series(vals, period):
-    """Wilder 平滑，与原脚本及通达信 SMA(x,n,1) 等价。"""
-    out = [float("nan")] * len(vals)
-    ag = al = 0.0
-    for i in range(1, len(vals)):
-        chg = vals[i] - vals[i - 1]
-        g, l = (chg, 0.0) if chg > 0 else (0.0, -chg)
-        if i < period:
-            ag += g
-            al += l
-        elif i == period:
-            ag, al = (ag + g) / period, (al + l) / period
-        else:
-            ag = (ag * (period - 1) + g) / period
-            al = (al * (period - 1) + l) / period
-        if i >= period:
-            out[i] = 100.0 if al == 0 else 100 - 100 / (1 + ag / al)
-    return out
-
-
 def section(title):
     print(f"\n## {title}\n")
 
 
 # ---------------------------------------------------------------- 数据获取
 
-def fetch_quote(code):
-    sym = market_prefix(code) + code
-    r = get(f"https://qt.gtimg.cn/q={sym}", raw=True)
-    r.encoding = "gbk"
-    f = r.text.split('"')[1].split("~")
-    num = lambda s: float(s) if re.fullmatch(r"-?[\d.]+", s or "") else 0.0
-    return {
-        "name": f[1], "price": num(f[3]), "chg": num(f[32]), "turnover": num(f[38]),
-        "pe": f[39], "pb": f[46], "total_cap": f[45], "float_cap": num(f[44]),
-        "up": f[47], "down": f[48],
-    }
-
-
 def fetch_kline(code, count=320, fq="qfq"):
-    sym = market_prefix(code) + code
-    url = f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={sym},day,,,{count},{fq}"
-    node = get(url, referer="https://gu.qq.com/")["data"][sym]
-    arr = node.get({"qfq": "qfqday", "hfq": "hfqday"}.get(fq, "day")) or node.get("day")
-    if not arr or len(arr) < 60:
-        raise RuntimeError(f"K线数量不足（至少60根）：{sym}")
-    rows = [r[:6] for r in arr]
-    return {k: [(r[0] if k == "date" else float(r[i])) for r in rows]
-            for i, k in enumerate(["date", "open", "close", "high", "low", "vol"])}
+    rows = kline_recent(prefix(code) + code, count, fq)
+    if len(rows) < 60:
+        raise RuntimeError(f"K线数量不足（至少60根）：{code}")
+    return {k: [r[i] for r in rows] for i, k in enumerate(["date", "open", "close", "high", "low", "vol"])}
 
 
 def fetch_money_flow(code):
-    secid = ("1." if market_prefix(code) == "sh" else "0.") + code
+    secid = ("1." if prefix(code) == "sh" else "0.") + code
     url = ("https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?lmt=0&klt=101"
            f"&secid={secid}&fields1=f1,f2,f3,f7&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64,f65")
-    kl = (get(url, referer="https://data.eastmoney.com/", retries=6).get("data") or {}).get("klines") or []
+    kl = (http_json(url, referer=EM_REF, retries=6).get("data") or {}).get("klines") or []
     out = []
     for s in kl:
         p = s.split(",")
@@ -144,7 +71,7 @@ def fetch_announcements(code, years=3, max_pages=20):
     for p in range(1, max_pages + 1):
         url = ("https://np-anotice-stock.eastmoney.com/api/security/ann?sr=-1&page_size=100"
                f"&page_index={p}&ann_type=A&client_source=web&stock_list={code}")
-        data = get(url)["data"]
+        data = http_json(url)["data"]
         lst = data.get("list") or []
         if p == 1:
             total = data.get("total_hits", 0)
@@ -160,7 +87,7 @@ def fetch_announcements(code, years=3, max_pages=20):
 
 def ann_content(art_code):
     try:
-        d = get(f"https://np-cnotice-stock.eastmoney.com/api/content/ann?art_code={art_code}"
+        d = http_json(f"https://np-cnotice-stock.eastmoney.com/api/content/ann?art_code={art_code}"
                 "&client_source=web&page_index=1", retries=2)["data"]
         t = re.sub(r"<[^>]+>", "", d.get("notice_content") or "")
         return re.sub(r"\s+", " ", t).strip()
@@ -172,16 +99,18 @@ def fetch_block_trades(code):
     url = ("https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_DATA_BLOCKTRADE&columns=ALL"
            f"&filter=(SECURITY_CODE%3D%22{code}%22)&pageNumber=1&pageSize=200&sortColumns=TRADE_DATE&sortTypes=-1")
     try:
-        r = get(url, retries=2)
+        r = http_json(url, retries=2)
         return (r.get("result") or {}).get("data") or []
     except Exception:
         return []
 
 
 def fetch_pb_history(code):
-    url = f"https://eniu.com/chart/pba/{market_prefix(code)}{code}/t/all"
-    d = get(url, referer="https://eniu.com/", timeout=90, retries=2)
-    return [v for v in d["pb"] if v is not None], d["date"]
+    """-> (PB 序列(>0), 日期序列)；优先读 cache_eniu 缓存。"""
+    r = eniu_series(prefix(code) + code, "pba")
+    if not r:
+        raise RuntimeError("亿牛网无 PB 数据")
+    return [v for v in r[1] if v > 0], r[0]
 
 
 # ---------------------------------------------------------------- 分析模块
@@ -448,12 +377,7 @@ def analyze_announcements(code, years=3, recent_days=30, neg_window=180):
 
     # 负面清单（公告标题，窗口 neg_window 天）
     section(f"公告负面清单（近{neg_window}天标题命中）")
-    routine = r"最近五年|年报|年度报告|审核|异常波动|解除限售条件未成就|回购注销|问询函"
-    hits = {}
-    for name, pat in (("减持", "减持"), ("解禁", "解禁|解除限售|上市流通"),
-                      ("监管处罚", "立案|处罚|警示|谴责|通报批评|纪律处分|监管措施|监管函"), ("诉讼", "诉讼|仲裁")):
-        hits[name] = [a for a in items if (now - dt(a)).days <= neg_window and re.search(pat, a["title"])
-                      and not re.search(routine, a["title"])]
+    hits = classify([x for x in items if (now - dt(x)).days <= neg_window])
     neg_total = sum(len(v) for v in hits.values()) + disc
     print("- " + "　".join(f"{k} {len(v)}" for k, v in hits.items()) + f"　大宗折价 {disc}　→ "
           + ("**通过**" if neg_total == 0 else "**有命中，需人工复核**"))
@@ -496,7 +420,7 @@ def main():
 
     buf = io.StringIO()
     with redirect_stdout(buf):
-        q = fetch_quote(code)
+        q = quote(code)
         print(f"# {q['name']}（{code}）数据分析报告\n")
         print(f"> 生成时间 {datetime.now():%Y-%m-%d %H:%M}　现价 {q['price']}（{q['chg']:+.2f}%）　"
               f"换手 {q['turnover']}%　涨停/跌停价 {q['up']}/{q['down']}\n> ⚠️ 仅为数据计算与信息整理，不构成投资建议")
