@@ -164,7 +164,7 @@ function postHTML(p,big,fresh){
   const w=p.w&&p.w.type&&WX[p.w.type];
   return `<article class="post" id="post-${p.id}" data-id="${p.id}">${avatarHTML('sm')}<div class="bd">
     <div class="who">${esc(set.name)}</div>
-    ${p.text?`<div class="tx${big?'':' clamp'}">${esc(p.text)}</div>${big?'':'<button class="more" data-more hidden>全文</button>'}`:''}
+    ${p.text?`<div class="tx${big?'':' clamp'}"${big?'':` data-open="${p.id}"`}>${esc(p.text)}</div>${big?'':'<button class="more" data-more hidden>全文</button>'}`:''}
     ${p.img?photoHTML(p,big).replace(sealsHTML(p),sealsHTML(p,false,fresh)):sealsHTML(p,true,fresh)}
     ${p.where?`<div class="where">于 ${esc(p.where)}</div>`:''}
     <div class="meta">${big?'':`<span>${relTime(p.t)}</span>`}${w?`<span class="wx">${wxSvg(p.w.type)}${esc(wxText(p.w))}</span>`:''}${p.tag?`<span class="tg">${esc(p.tag)}</span>`:''}${big?'':`<button class="dots" data-act="${p.id}" aria-label="盖章、批注">${DOTS}</button>`}</div>
@@ -237,7 +237,7 @@ let actEl=null,actY=0;
 function openAct(id,btn){
   closeAct();const r=btn.getBoundingClientRect();
   actEl=document.createElement('div');actEl.className='act';
-  actEl.innerHTML=`<button data-stamp="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="5" y="14" width="14" height="5" rx="1"/><path d="M9.5 14V9.5a2.5 2.5 0 1 1 5 0V14"/><path d="M4 21h16"/></svg>盖章</button><button data-cmt="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 5h16v11H9l-4 3.5V16H4z"/></svg>批注</button><button data-card="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>卡片</button>`;
+  actEl.innerHTML=`<button data-stamp="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="5" y="14" width="14" height="5" rx="1"/><path d="M9.5 14V9.5a2.5 2.5 0 1 1 5 0V14"/><path d="M4 21h16"/></svg>盖章</button><button data-cmt="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 5h16v11H9l-4 3.5V16H4z"/></svg>批注</button><button data-edit="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 3L8 19z"/></svg>改</button><button data-card="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>卡片</button>`;
   document.body.appendChild(actEl);actY=scrollY;
   actEl.style.top=(r.top+r.height/2-actEl.offsetHeight/2)+'px';actEl.style.left=(r.left-8-actEl.offsetWidth)+'px';
 }

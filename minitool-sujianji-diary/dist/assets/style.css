@@ -254,3 +254,4 @@ button{cursor:pointer}
   .sheet{padding-bottom:calc(22px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))}
   .shot-acts{padding-bottom:calc(14px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))}
 }
+.tx[data-open]{cursor:pointer}
